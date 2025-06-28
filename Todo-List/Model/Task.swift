@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Task : Identifiable, Encodable {
+struct Task : Identifiable, Encodable, Decodable {
     var id: UUID
     var name: String
     var isCompleted: Bool

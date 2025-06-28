@@ -11,21 +11,36 @@ import Foundation
 struct ContentView: View {
     
     @State var taskText: String = ""
+    @StateObject private var taskViewModel = TaskViewModel()
     
     var body: some View {
-        VStack {
-            TextField("Nom de la tâche", text: $taskText)
-                .onSubmit {
-                    let task = Task(id: UUID(), name: taskText, isCompleted: false)
-                    do {
-                        let data = try JSONEncoder().encode(task)
-                        UserDefaults.standard.set(data, forKey: task.id.uuidString)
-                    } catch {
-                        print("Erreur lors de l'encodage de la tâche: \(error)")
+        Text("Todo List 🗒️")
+            .font(.headline)
+            .padding()
+            .foregroundColor(.gray)
+        Text("\(taskViewModel.tasks.count) tâches")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 20)
+        
+        ZStack {
+            ScrollView {
+                TaskList(tasks: $taskViewModel.tasks)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(maxWidth: .infinity)
+            .safeAreaInset(edge: .bottom) {
+                TextField("Nom de la tâche", text: $taskText)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .onSubmit {
+                        let task = Task(id: UUID(), name: taskText, isCompleted: false)
+                        if(!taskText.isEmpty){
+                            taskViewModel.addTask(task)
+                            taskText = ""
+                        }
                     }
-                }
+            }
+            .padding()
         }
-        .padding()
     }
 }
 

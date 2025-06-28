@@ -5,27 +5,16 @@
 //  Created by Dylan COUTO DE OLIVEIRA on 24/06/2025.
 //
 
-
 import SwiftUI
 
-struct RadioButton<Label: View>: View {
-    let isSelected: Bool
-    let action: () -> Void
-    let label: () -> Label
-
-    var body: some View {
-        Button(action: action) {
+struct CheckboxToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button(action: { configuration.isOn.toggle() }) {
             HStack {
-                ZStack {
-                    Circle()
-                        .stroke(lineWidth: 2)
-                        .frame(width: 20, height: 20)
-                    if isSelected {
-                        Circle()
-                            .frame(width: 12, height: 12)
-                    }
-                }
-                label()
+                Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                configuration.label
             }
         }
         .buttonStyle(.plain)
@@ -33,26 +22,33 @@ struct RadioButton<Label: View>: View {
 }
 
 struct TaskList: View {
-  let tasks: [Task]
-  @State private var selectedID: UUID?
+    @Binding var tasks: [Task]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(tasks.indices, id: \.self) { index in
+                Toggle(isOn: $tasks[index].isCompleted) {
+                    Text(tasks[index].name)
+                        .strikethrough(tasks[index].isCompleted)
+                }
+                .toggleStyle(CheckboxToggleStyle())
+            }
+        }
+        .padding(.all, 8)
+    }
+}
 
-  var body: some View {
-      VStack(alignment: .leading, spacing: 8) {
-          ForEach(tasks) { task in
-              RadioButton(
-                  isSelected: selectedID == task.id,
-                  action: { selectedID = task.id }
-              ) {
-                  Text(task.name)
-              }
-          }
-      }
-  }
+struct TaskListPreviewWrapper: View {
+    @State private var tasks: [Task] = [
+        Task(id: UUID(), name: "Faire la vaiselle", isCompleted: false),
+        Task(id: UUID(), name: "Promener le chien", isCompleted: false)
+    ]
+
+    var body: some View {
+        TaskList(tasks: $tasks)
+    }
 }
 
 #Preview {
-    TaskList(tasks: [
-        Task(id: UUID(), name: "Faire la vaiselle", isCompleted: false),
-        Task(id: UUID(), name: "Promener le chien", isCompleted: false)
-    ])
+    TaskListPreviewWrapper()
 }
